@@ -1,0 +1,403 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --border: #2e3147;
+  --accent: #60c080;
+  --accent-dim: #3a7a50;
+  --text: #e2e4f0;
+  --text-dim: #8892b0;
+  --res: #4a4e6a;
+  --res-text: #636987;
+  --font-mono: "Cascadia Code", "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --radius: 6px;
+  --badge-m:   rgba(238,100,100,0.18);
+  --badge-m-t: #e87070;
+  --badge-s:   rgba(91,141,238,0.18);
+  --badge-s-t: #5b8dee;
+  --badge-u:   rgba(80,200,130,0.18);
+  --badge-u-t: #50c882;
+  --badge-rw:  rgba(91,141,238,0.10);
+  --badge-rw-t: #7aa0e8;
+  --badge-ro:  rgba(150,150,150,0.15);
+  --badge-ro-t: #aaa;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ── Inputs ─────────────────────────────────── */
+
+.inputs {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+#reg-group {
+  flex: 1;
+  min-width: 220px;
+}
+
+label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+input[type="text"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  padding: 0.55rem 0.8rem;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+input[type="text"]::placeholder {
+  color: var(--res-text);
+}
+
+/* ── Autocomplete dropdown ───────────────────── */
+
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.dropdown li {
+  padding: 0.45rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+}
+
+.dropdown li .dd-name {
+  flex-shrink: 0;
+}
+
+.dropdown li .dd-addr {
+  font-size: 0.75rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.dropdown li .dd-long {
+  color: var(--text-dim);
+  font-size: 0.76rem;
+  font-family: var(--font-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown li .dd-priv {
+  font-size: 0.7rem;
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  flex-shrink: 0;
+}
+
+.dropdown li .dd-priv.M { background: var(--badge-m); color: var(--badge-m-t); }
+.dropdown li .dd-priv.S { background: var(--badge-s); color: var(--badge-s-t); }
+.dropdown li .dd-priv.U { background: var(--badge-u); color: var(--badge-u-t); }
+
+.dropdown li:hover,
+.dropdown li[aria-selected="true"] {
+  background: var(--border);
+}
+
+/* ── Register info header ────────────────────── */
+
+#reg-info {
+  animation: fade-in 0.15s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+#reg-title {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.reg-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.priv-badge, .access-badge, .addr-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.15em 0.55em;
+  border-radius: 3px;
+}
+
+.priv-badge.M { background: var(--badge-m); color: var(--badge-m-t); }
+.priv-badge.S { background: var(--badge-s); color: var(--badge-s-t); }
+.priv-badge.U { background: var(--badge-u); color: var(--badge-u-t); }
+.priv-badge   { background: var(--border);  color: var(--text-dim); }
+
+.access-badge { background: var(--badge-rw); color: var(--badge-rw-t); }
+.access-badge.RO { background: var(--badge-ro); color: var(--badge-ro-t); }
+
+.addr-badge { background: rgba(96,192,128,0.12); color: var(--accent); }
+
+.reg-desc {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  margin-top: 0.15rem;
+  max-width: 700px;
+}
+
+.spec-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.7rem;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.spec-link:hover {
+  background: rgba(96, 192, 128, 0.1);
+}
+
+/* ── Bit fields table ────────────────────────── */
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+thead th {
+  background: var(--surface);
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+tbody tr.is-reserved {
+  color: var(--res-text);
+}
+
+tbody tr.is-reserved:hover {
+  background: transparent;
+}
+
+tbody td {
+  padding: 0.5rem 0.85rem;
+  vertical-align: top;
+}
+
+td.bits, td.field-name, td.field-val, td.field-type {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+td.bits {
+  color: var(--text-dim);
+  width: 6rem;
+}
+
+td.field-name {
+  width: 9rem;
+}
+
+td.field-type {
+  width: 5rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+td.field-val {
+  width: 7rem;
+}
+
+td.field-val .hex {
+  color: var(--accent);
+}
+
+td.field-val .bin {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+td.meaning {
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+td.meaning .enum-match {
+  color: var(--text);
+  font-weight: 500;
+}
+
+td.meaning .desc {
+  font-size: 0.82rem;
+  margin-top: 0.1rem;
+  color: var(--text-dim);
+}
+
+/* ── Reserved row styling ────────────────────── */
+
+tr.is-reserved td.field-name { color: var(--res-text); }
+tr.is-reserved td.bits { color: var(--res); }
+tr.is-reserved td.field-val .hex { color: var(--res-text); }
+tr.is-reserved td.field-type { color: var(--res); }
+
+/* ── Notices ─────────────────────────────────── */
+
+.notice {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.notice code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+}
+
+/* ── Disclaimer ──────────────────────────────── */
+
+.disclaimer {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.disclaimer a {
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.disclaimer a:hover { color: var(--text); }
+
+/* ── Scrollbar ───────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

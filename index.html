@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RCRF — RISC-V CSR Reference</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>RCRF</h1>
+    <p class="subtitle">RISC-V Control and Status Register Reference</p>
+  </header>
+
+  <main>
+    <section class="inputs">
+      <div class="input-group" id="reg-group">
+        <label for="reg-input">Register</label>
+        <div class="autocomplete-wrapper">
+          <input
+            id="reg-input"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="e.g. mstatus"
+            aria-label="CSR name"
+            aria-autocomplete="list"
+            aria-controls="reg-dropdown"
+          />
+          <ul id="reg-dropdown" class="dropdown" role="listbox" hidden></ul>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="val-input">Value</label>
+        <input
+          id="val-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="0x0000000000000000"
+          aria-label="Register value (hex or decimal)"
+        />
+      </div>
+    </section>
+
+    <section id="reg-info" hidden>
+      <div class="reg-header">
+        <div>
+          <h2 id="reg-title"></h2>
+          <div class="reg-badges">
+            <span id="reg-priv-badge" class="priv-badge"></span>
+            <span id="reg-access-badge" class="access-badge"></span>
+            <span id="reg-addr-badge" class="addr-badge"></span>
+          </div>
+          <p id="reg-desc" class="reg-desc"></p>
+        </div>
+        <a id="reg-link" href="#" target="_blank" rel="noopener" class="spec-link">
+          Spec ↗
+        </a>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="fields-table">
+          <thead>
+            <tr>
+              <th>Bits</th>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Value</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody id="fields-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p id="no-data-msg" class="notice" hidden>
+      Register data not loaded. Run <code>python3 scripts/gen_data.py</code> to generate
+      <code>data/registers.json</code>, then serve this directory over HTTP.
+    </p>
+
+    <p id="loading-msg" class="notice">Loading register data…</p>
+
+    <p id="profile-disclaimer" class="disclaimer"></p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
