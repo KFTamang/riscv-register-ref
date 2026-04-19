@@ -40,7 +40,7 @@ fetch("data/registers.json")
       nameIndex[reg.name.toUpperCase()] = reg;
       if (reg.address) addrIndex[reg.address.toUpperCase()] = reg;
     }
-    console.log(`[RCRF] Loaded ${registers.length} CSRs`);
+    console.log(`[RVRF] Loaded ${registers.length} CSRs`);
     loadingMsg.hidden = true;
     regInput.disabled = false;
     valInput.disabled = false;
@@ -49,7 +49,7 @@ fetch("data/registers.json")
     handleUrlHash();
   })
   .catch(err => {
-    console.error("[RCRF] Failed to load data:", err);
+    console.error("[RVRF] Failed to load data:", err);
     loadingMsg.hidden = true;
     noDataMsg.hidden = false;
   });
