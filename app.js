@@ -72,10 +72,16 @@ function setDisclaimer() {
 // ── URL hash navigation ───────────────────────────────────────────────────────
 
 function handleUrlHash() {
-  const hash = decodeURIComponent(location.hash.slice(1)).toUpperCase();
+  const params = new URLSearchParams(location.search);
+  const regParam = (params.get("reg") || "").toUpperCase();
+  const valParam = params.get("val") || "";
+  // fall back to bare hash for backwards compat
+  const hash = regParam || decodeURIComponent(location.hash.slice(1)).toUpperCase();
   if (!hash) return;
   const reg = nameIndex[hash] || addrIndex[hash];
-  if (reg) selectRegister(reg.name);
+  if (!reg) return;
+  if (valParam) valInput.value = valParam;
+  selectRegister(reg.name);
 }
 
 // ── Autocomplete ─────────────────────────────────────────────────────────────
@@ -198,9 +204,6 @@ function selectRegister(name) {
   regInput.value = reg.name;
   hideDropdown();
 
-  // Update URL hash
-  history.replaceState(null, "", "#" + encodeURIComponent(reg.name));
-
   // Header
   regTitle.textContent = reg.long_name ? `${reg.name}  —  ${reg.long_name}` : reg.name;
 
@@ -257,10 +260,21 @@ function truncate(str, maxLen) {
   return str.slice(0, maxLen).trimEnd() + "…";
 }
 
+// ── URL sync ──────────────────────────────────────────────────────────────────
+
+function updateUrl() {
+  if (!currentReg) return;
+  const params = new URLSearchParams({ reg: currentReg.name });
+  const val = valInput.value.trim();
+  if (val) params.set("val", val);
+  history.replaceState(null, "", "?" + params.toString());
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
 
 function decodeAndRender() {
   if (!currentReg) return;
+  updateUrl();
 
   const value = valInput.value.trim() ? parseValue(valInput.value) : null;
 
