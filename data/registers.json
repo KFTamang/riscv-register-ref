@@ -1,5 +1,615 @@
 [
   {
+    "name": "fflags",
+    "long_name": "Floating-Point Accrued Exceptions",
+    "description": "Accumulates floating-point exception flags. Each bit is sticky: set on a matching exception and cleared only by explicit software write.",
+    "address": "0x001",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/unpriv/f-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 31,
+        "lsb": 5,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "NV",
+        "msb": 4,
+        "lsb": 4,
+        "description": "Invalid Operation: set when a floating-point operation produces an invalid result (e.g., 0/0, \u221e\u2212\u221e, \u221a\u22121).",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "DZ",
+        "msb": 3,
+        "lsb": 3,
+        "description": "Divide by Zero: set when a finite non-zero value is divided by zero.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "OF",
+        "msb": 2,
+        "lsb": 2,
+        "description": "Overflow: set when the rounded result exceeds the representable range.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "UF",
+        "msb": 1,
+        "lsb": 1,
+        "description": "Underflow: set when the result is tiny and suffers a loss of precision.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "NX",
+        "msb": 0,
+        "lsb": 0,
+        "description": "Inexact: set when the rounded result differs from the mathematical result.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "frm",
+    "long_name": "Floating-Point Dynamic Rounding Mode",
+    "description": "Specifies the dynamic rounding mode used by floating-point instructions that use DYN rounding. Also aliased in fcsr[7:5].",
+    "address": "0x002",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/unpriv/f-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 31,
+        "lsb": 3,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "FRM",
+        "msb": 2,
+        "lsb": 0,
+        "description": "Floating-point rounding mode.",
+        "values": [
+          {
+            "val": 0,
+            "label": "RNE \u2014 Round to Nearest, ties to Even"
+          },
+          {
+            "val": 1,
+            "label": "RTZ \u2014 Round toward Zero"
+          },
+          {
+            "val": 2,
+            "label": "RDN \u2014 Round Down (toward \u2212\u221e)"
+          },
+          {
+            "val": 3,
+            "label": "RUP \u2014 Round Up (toward +\u221e)"
+          },
+          {
+            "val": 4,
+            "label": "RMM \u2014 Round to Nearest, ties to Max Magnitude"
+          },
+          {
+            "val": 7,
+            "label": "DYN \u2014 Dynamic (use frm field; only valid in instruction encoding)"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "fcsr",
+    "long_name": "Floating-Point Control and Status Register",
+    "description": "Combines the floating-point rounding mode (frm) and accrued exception flags (fflags) into a single CSR. Bits 31:8 are reserved for future standard extensions.",
+    "address": "0x003",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/unpriv/f-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 31,
+        "lsb": 8,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "FRM",
+        "msb": 7,
+        "lsb": 5,
+        "description": "Dynamic rounding mode (mirrors frm CSR).",
+        "values": [
+          {
+            "val": 0,
+            "label": "RNE \u2014 Round to Nearest, ties to Even"
+          },
+          {
+            "val": 1,
+            "label": "RTZ \u2014 Round toward Zero"
+          },
+          {
+            "val": 2,
+            "label": "RDN \u2014 Round Down (toward \u2212\u221e)"
+          },
+          {
+            "val": 3,
+            "label": "RUP \u2014 Round Up (toward +\u221e)"
+          },
+          {
+            "val": 4,
+            "label": "RMM \u2014 Round to Nearest, ties to Max Magnitude"
+          },
+          {
+            "val": 7,
+            "label": "DYN \u2014 Dynamic (use frm field; only valid in instruction encoding)"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "NV",
+        "msb": 4,
+        "lsb": 4,
+        "description": "Invalid Operation accrued exception flag.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "DZ",
+        "msb": 3,
+        "lsb": 3,
+        "description": "Divide by Zero accrued exception flag.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "OF",
+        "msb": 2,
+        "lsb": 2,
+        "description": "Overflow accrued exception flag.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "UF",
+        "msb": 1,
+        "lsb": 1,
+        "description": "Underflow accrued exception flag.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "NX",
+        "msb": 0,
+        "lsb": 0,
+        "description": "Inexact accrued exception flag.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "seed",
+    "long_name": "Entropy Source CSR",
+    "description": "Provides access to a hardware entropy source (Zkr). Read with csrrw to poll for fresh entropy; the write value is ignored. Access requires mseccfg.SSEED/USEED to be set.",
+    "address": "0x015",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/scalar-crypto.adoc",
+    "fields": [
+      {
+        "name": "OPST",
+        "msb": 31,
+        "lsb": 30,
+        "description": "Operation status: indicates whether entropy is available.",
+        "values": [
+          {
+            "val": 0,
+            "label": "BIST \u2014 Built-In Self-Test in progress"
+          },
+          {
+            "val": 1,
+            "label": "WAIT \u2014 Entropy not ready; retry"
+          },
+          {
+            "val": 2,
+            "label": "ES16 \u2014 16 bits of entropy available in bits[15:0]"
+          },
+          {
+            "val": 3,
+            "label": "DEAD \u2014 Non-recoverable error"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "RO"
+      },
+      {
+        "name": "WPRI",
+        "msb": 29,
+        "lsb": 16,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "entropy",
+        "msb": 15,
+        "lsb": 0,
+        "description": "16 bits of randomness, valid only when OPST=ES16. Reads as 0 in other states.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "RO"
+      }
+    ]
+  },
+  {
+    "name": "vstart",
+    "long_name": "Vector Start Index Register",
+    "description": "Specifies the index of the first element to be executed by a vector instruction. Normally written to 0 by hardware after each vector instruction. Upper bits are WARL (implementation-defined width).",
+    "address": "0x008",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 63,
+        "lsb": 16,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "vstart",
+        "msb": 15,
+        "lsb": 0,
+        "description": "Start element index. Number of writable bits is implementation-defined (at most log2(VLEN)).",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "vxsat",
+    "long_name": "Vector Fixed-Point Saturation Flag",
+    "description": "Single-bit sticky flag set when a vector fixed-point instruction saturates. Also mirrored in vcsr[0]. Write 0 to clear.",
+    "address": "0x009",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 63,
+        "lsb": 1,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "vxsat",
+        "msb": 0,
+        "lsb": 0,
+        "description": "Saturation flag: set when a fixed-point instruction saturates the result.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "vxrm",
+    "long_name": "Vector Fixed-Point Rounding Mode Register",
+    "description": "Selects the rounding mode for vector fixed-point arithmetic instructions. Also mirrored in vcsr[2:1].",
+    "address": "0x00A",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 63,
+        "lsb": 2,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "vxrm",
+        "msb": 1,
+        "lsb": 0,
+        "description": "Fixed-point rounding mode.",
+        "values": [
+          {
+            "val": 0,
+            "label": "rnu \u2014 Round to Nearest Up (round-half-up)"
+          },
+          {
+            "val": 1,
+            "label": "rne \u2014 Round to Nearest Even"
+          },
+          {
+            "val": 2,
+            "label": "rdn \u2014 Round Down (truncate)"
+          },
+          {
+            "val": 3,
+            "label": "rod \u2014 Round to Odd (OR bits into LSB)"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "vcsr",
+    "long_name": "Vector Control and Status Register",
+    "description": "Provides unified access to vxrm and vxsat. Writes to vcsr are reflected in vxrm and vxsat and vice versa.",
+    "address": "0x00F",
+    "privilege": "U",
+    "access": "RW",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "WPRI",
+        "msb": 63,
+        "lsb": 3,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "vxrm",
+        "msb": 2,
+        "lsb": 1,
+        "description": "Fixed-point rounding mode (mirrors vxrm CSR).",
+        "values": [
+          {
+            "val": 0,
+            "label": "rnu \u2014 Round to Nearest Up (round-half-up)"
+          },
+          {
+            "val": 1,
+            "label": "rne \u2014 Round to Nearest Even"
+          },
+          {
+            "val": 2,
+            "label": "rdn \u2014 Round Down (truncate)"
+          },
+          {
+            "val": 3,
+            "label": "rod \u2014 Round to Odd (OR bits into LSB)"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "WARL"
+      },
+      {
+        "name": "vxsat",
+        "msb": 0,
+        "lsb": 0,
+        "description": "Fixed-point saturation flag (mirrors vxsat CSR).",
+        "values": [],
+        "reserved": false,
+        "rwtype": "WARL"
+      }
+    ]
+  },
+  {
+    "name": "vl",
+    "long_name": "Vector Length Register",
+    "description": "Read-only register holding the number of elements to be updated by a vector instruction. Set by vsetvl/vsetvli/vsetivli.",
+    "address": "0xC20",
+    "privilege": "U",
+    "access": "RO",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "vl",
+        "msb": 63,
+        "lsb": 0,
+        "description": "Active vector length in elements. Range: 0 to VLMAX.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "RO"
+      }
+    ]
+  },
+  {
+    "name": "vtype",
+    "long_name": "Vector Data Type Register",
+    "description": "Read-only register set by vsetvl/vsetvli/vsetivli. Encodes element width, register grouping, and agnostic policies. vill=1 means an unsupported configuration was requested.",
+    "address": "0xC21",
+    "privilege": "U",
+    "access": "RO",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "vill",
+        "msb": 63,
+        "lsb": 63,
+        "description": "Illegal configuration: set when vsetvl writes an unsupported vtype. All other bits read as 0 when vill=1.",
+        "values": [
+          {
+            "val": 0,
+            "label": "Valid configuration"
+          },
+          {
+            "val": 1,
+            "label": "Illegal \u2014 unsupported vtype requested"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "RO"
+      },
+      {
+        "name": "WPRI",
+        "msb": 62,
+        "lsb": 8,
+        "description": "Reserved, writes preserved, reads ignored.",
+        "values": [],
+        "reserved": true,
+        "rwtype": "WPRI"
+      },
+      {
+        "name": "vma",
+        "msb": 7,
+        "lsb": 7,
+        "description": "Vector Mask Agnostic: when set, masked-off elements may be written with all 1s or left undisturbed.",
+        "values": [
+          {
+            "val": 0,
+            "label": "Undisturbed"
+          },
+          {
+            "val": 1,
+            "label": "Agnostic (may write 1s)"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "RO"
+      },
+      {
+        "name": "vta",
+        "msb": 6,
+        "lsb": 6,
+        "description": "Vector Tail Agnostic: when set, tail elements (beyond vl) may be written with all 1s or left undisturbed.",
+        "values": [
+          {
+            "val": 0,
+            "label": "Undisturbed"
+          },
+          {
+            "val": 1,
+            "label": "Agnostic (may write 1s)"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "RO"
+      },
+      {
+        "name": "vsew",
+        "msb": 5,
+        "lsb": 3,
+        "description": "Selected Element Width: encodes the element data type width.",
+        "values": [
+          {
+            "val": 0,
+            "label": "e8 \u2014 8-bit elements"
+          },
+          {
+            "val": 1,
+            "label": "e16 \u2014 16-bit elements"
+          },
+          {
+            "val": 2,
+            "label": "e32 \u2014 32-bit elements"
+          },
+          {
+            "val": 3,
+            "label": "e64 \u2014 64-bit elements"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "RO"
+      },
+      {
+        "name": "vlmul",
+        "msb": 2,
+        "lsb": 0,
+        "description": "Vector Length Multiplier: controls register grouping (LMUL). Signed 3-bit value; negative values represent fractional LMUL.",
+        "values": [
+          {
+            "val": 5,
+            "label": "mf8 \u2014 LMUL=1/8"
+          },
+          {
+            "val": 6,
+            "label": "mf4 \u2014 LMUL=1/4"
+          },
+          {
+            "val": 7,
+            "label": "mf2 \u2014 LMUL=1/2"
+          },
+          {
+            "val": 0,
+            "label": "m1  \u2014 LMUL=1"
+          },
+          {
+            "val": 1,
+            "label": "m2  \u2014 LMUL=2"
+          },
+          {
+            "val": 2,
+            "label": "m4  \u2014 LMUL=4"
+          },
+          {
+            "val": 3,
+            "label": "m8  \u2014 LMUL=8"
+          }
+        ],
+        "reserved": false,
+        "rwtype": "RO"
+      }
+    ]
+  },
+  {
+    "name": "vlenb",
+    "long_name": "Vector Register Length in Bytes",
+    "description": "Read-only constant holding VLEN/8 \u2014 the number of bytes in a single vector register. Useful for computing stride values without disturbing vl/vtype.",
+    "address": "0xC22",
+    "privilege": "U",
+    "access": "RO",
+    "spec_url": "https://github.com/riscv/riscv-isa-manual/blob/main/src/v-st-ext.adoc",
+    "fields": [
+      {
+        "name": "vlenb",
+        "msb": 63,
+        "lsb": 0,
+        "description": "Bytes per vector register = VLEN/8. Design-time constant.",
+        "values": [],
+        "reserved": false,
+        "rwtype": "RO"
+      }
+    ]
+  },
+  {
     "name": "sstatus",
     "long_name": "Supervisor Status Register",
     "description": "Tracks and controls the hart's current operating state; a restricted view of mstatus.",

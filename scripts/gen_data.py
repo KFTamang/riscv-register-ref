@@ -5,7 +5,8 @@ import json, pathlib
 OUT = pathlib.Path(__file__).parent.parent / "data" / "registers.json"
 OUT.parent.mkdir(exist_ok=True)
 
-SPEC_BASE = "https://github.com/riscv/riscv-isa-manual/blob/main/src/priv"
+SPEC_BASE   = "https://github.com/riscv/riscv-isa-manual/blob/main/src/priv"
+SPEC_BASE_U = "https://github.com/riscv/riscv-isa-manual/blob/main/src"
 
 def wpri(msb, lsb):
     return {"name": "WPRI", "msb": msb, "lsb": lsb,
@@ -73,7 +74,200 @@ PMM = [
     {"val": 3, "label": "11 — PMLEN = XLEN-48 (16 bits on RV64)"},
 ]
 
+FRM = [
+    {"val": 0, "label": "RNE — Round to Nearest, ties to Even"},
+    {"val": 1, "label": "RTZ — Round toward Zero"},
+    {"val": 2, "label": "RDN — Round Down (toward −∞)"},
+    {"val": 3, "label": "RUP — Round Up (toward +∞)"},
+    {"val": 4, "label": "RMM — Round to Nearest, ties to Max Magnitude"},
+    {"val": 7, "label": "DYN — Dynamic (use frm field; only valid in instruction encoding)"},
+]
+VXRM = [
+    {"val": 0, "label": "rnu — Round to Nearest Up (round-half-up)"},
+    {"val": 1, "label": "rne — Round to Nearest Even"},
+    {"val": 2, "label": "rdn — Round Down (truncate)"},
+    {"val": 3, "label": "rod — Round to Odd (OR bits into LSB)"},
+]
+VSEW = [
+    {"val": 0, "label": "e8 — 8-bit elements"},
+    {"val": 1, "label": "e16 — 16-bit elements"},
+    {"val": 2, "label": "e32 — 32-bit elements"},
+    {"val": 3, "label": "e64 — 64-bit elements"},
+]
+VLMUL = [
+    {"val": 5, "label": "mf8 — LMUL=1/8"},
+    {"val": 6, "label": "mf4 — LMUL=1/4"},
+    {"val": 7, "label": "mf2 — LMUL=1/2"},
+    {"val": 0, "label": "m1  — LMUL=1"},
+    {"val": 1, "label": "m2  — LMUL=2"},
+    {"val": 2, "label": "m4  — LMUL=4"},
+    {"val": 3, "label": "m8  — LMUL=8"},
+]
+SEED_OPST = [
+    {"val": 0, "label": "BIST — Built-In Self-Test in progress"},
+    {"val": 1, "label": "WAIT — Entropy not ready; retry"},
+    {"val": 2, "label": "ES16 — 16 bits of entropy available in bits[15:0]"},
+    {"val": 3, "label": "DEAD — Non-recoverable error"},
+]
+
 registers = []
+
+# ──────────────────────────────────────────────────────────────────────────────
+# UNPRIVILEGED CSRs — Floating-Point (F extension)
+# ──────────────────────────────────────────────────────────────────────────────
+
+registers.append({
+    "name": "fflags",
+    "long_name": "Floating-Point Accrued Exceptions",
+    "description": "Accumulates floating-point exception flags. Each bit is sticky: set on a matching exception and cleared only by explicit software write.",
+    "address": "0x001", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/unpriv/f-st-ext.adoc",
+    "fields": [
+        wpri(31, 5),
+        {"name": "NV", "msb": 4, "lsb": 4, "description": "Invalid Operation: set when a floating-point operation produces an invalid result (e.g., 0/0, ∞−∞, √−1).", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "DZ", "msb": 3, "lsb": 3, "description": "Divide by Zero: set when a finite non-zero value is divided by zero.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "OF", "msb": 2, "lsb": 2, "description": "Overflow: set when the rounded result exceeds the representable range.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "UF", "msb": 1, "lsb": 1, "description": "Underflow: set when the result is tiny and suffers a loss of precision.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "NX", "msb": 0, "lsb": 0, "description": "Inexact: set when the rounded result differs from the mathematical result.", "values": [], "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+registers.append({
+    "name": "frm",
+    "long_name": "Floating-Point Dynamic Rounding Mode",
+    "description": "Specifies the dynamic rounding mode used by floating-point instructions that use DYN rounding. Also aliased in fcsr[7:5].",
+    "address": "0x002", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/unpriv/f-st-ext.adoc",
+    "fields": [
+        wpri(31, 3),
+        {"name": "FRM", "msb": 2, "lsb": 0, "description": "Floating-point rounding mode.", "values": FRM, "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+registers.append({
+    "name": "fcsr",
+    "long_name": "Floating-Point Control and Status Register",
+    "description": "Combines the floating-point rounding mode (frm) and accrued exception flags (fflags) into a single CSR. Bits 31:8 are reserved for future standard extensions.",
+    "address": "0x003", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/unpriv/f-st-ext.adoc",
+    "fields": [
+        wpri(31, 8),
+        {"name": "FRM",    "msb": 7, "lsb": 5, "description": "Dynamic rounding mode (mirrors frm CSR).", "values": FRM, "reserved": False, "rwtype": "WARL"},
+        {"name": "NV",     "msb": 4, "lsb": 4, "description": "Invalid Operation accrued exception flag.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "DZ",     "msb": 3, "lsb": 3, "description": "Divide by Zero accrued exception flag.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "OF",     "msb": 2, "lsb": 2, "description": "Overflow accrued exception flag.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "UF",     "msb": 1, "lsb": 1, "description": "Underflow accrued exception flag.", "values": [], "reserved": False, "rwtype": "WARL"},
+        {"name": "NX",     "msb": 0, "lsb": 0, "description": "Inexact accrued exception flag.", "values": [], "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# UNPRIVILEGED CSRs — Entropy Source (Zkr extension)
+# ──────────────────────────────────────────────────────────────────────────────
+
+registers.append({
+    "name": "seed",
+    "long_name": "Entropy Source CSR",
+    "description": "Provides access to a hardware entropy source (Zkr). Read with csrrw to poll for fresh entropy; the write value is ignored. Access requires mseccfg.SSEED/USEED to be set.",
+    "address": "0x015", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/scalar-crypto.adoc",
+    "fields": [
+        {"name": "OPST",    "msb": 31, "lsb": 30, "description": "Operation status: indicates whether entropy is available.", "values": SEED_OPST, "reserved": False, "rwtype": "RO"},
+        wpri(29, 16),
+        {"name": "entropy", "msb": 15, "lsb":  0, "description": "16 bits of randomness, valid only when OPST=ES16. Reads as 0 in other states.", "values": [], "reserved": False, "rwtype": "RO"},
+    ],
+})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# UNPRIVILEGED CSRs — Vector (V extension)
+# ──────────────────────────────────────────────────────────────────────────────
+
+registers.append({
+    "name": "vstart",
+    "long_name": "Vector Start Index Register",
+    "description": "Specifies the index of the first element to be executed by a vector instruction. Normally written to 0 by hardware after each vector instruction. Upper bits are WARL (implementation-defined width).",
+    "address": "0x008", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        wpri(63, 16),
+        {"name": "vstart", "msb": 15, "lsb": 0, "description": "Start element index. Number of writable bits is implementation-defined (at most log2(VLEN)).", "values": [], "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+registers.append({
+    "name": "vxsat",
+    "long_name": "Vector Fixed-Point Saturation Flag",
+    "description": "Single-bit sticky flag set when a vector fixed-point instruction saturates. Also mirrored in vcsr[0]. Write 0 to clear.",
+    "address": "0x009", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        wpri(63, 1),
+        {"name": "vxsat", "msb": 0, "lsb": 0, "description": "Saturation flag: set when a fixed-point instruction saturates the result.", "values": [], "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+registers.append({
+    "name": "vxrm",
+    "long_name": "Vector Fixed-Point Rounding Mode Register",
+    "description": "Selects the rounding mode for vector fixed-point arithmetic instructions. Also mirrored in vcsr[2:1].",
+    "address": "0x00A", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        wpri(63, 2),
+        {"name": "vxrm", "msb": 1, "lsb": 0, "description": "Fixed-point rounding mode.", "values": VXRM, "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+registers.append({
+    "name": "vcsr",
+    "long_name": "Vector Control and Status Register",
+    "description": "Provides unified access to vxrm and vxsat. Writes to vcsr are reflected in vxrm and vxsat and vice versa.",
+    "address": "0x00F", "privilege": "U", "access": "RW",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        wpri(63, 3),
+        {"name": "vxrm",  "msb": 2, "lsb": 1, "description": "Fixed-point rounding mode (mirrors vxrm CSR).", "values": VXRM, "reserved": False, "rwtype": "WARL"},
+        {"name": "vxsat", "msb": 0, "lsb": 0, "description": "Fixed-point saturation flag (mirrors vxsat CSR).", "values": [], "reserved": False, "rwtype": "WARL"},
+    ],
+})
+
+registers.append({
+    "name": "vl",
+    "long_name": "Vector Length Register",
+    "description": "Read-only register holding the number of elements to be updated by a vector instruction. Set by vsetvl/vsetvli/vsetivli.",
+    "address": "0xC20", "privilege": "U", "access": "RO",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        {"name": "vl", "msb": 63, "lsb": 0, "description": "Active vector length in elements. Range: 0 to VLMAX.", "values": [], "reserved": False, "rwtype": "RO"},
+    ],
+})
+
+registers.append({
+    "name": "vtype",
+    "long_name": "Vector Data Type Register",
+    "description": "Read-only register set by vsetvl/vsetvli/vsetivli. Encodes element width, register grouping, and agnostic policies. vill=1 means an unsupported configuration was requested.",
+    "address": "0xC21", "privilege": "U", "access": "RO",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        {"name": "vill",   "msb": 63, "lsb": 63, "description": "Illegal configuration: set when vsetvl writes an unsupported vtype. All other bits read as 0 when vill=1.", "values": [{"val":0,"label":"Valid configuration"},{"val":1,"label":"Illegal — unsupported vtype requested"}], "reserved": False, "rwtype": "RO"},
+        wpri(62, 8),
+        {"name": "vma",    "msb":  7, "lsb":  7, "description": "Vector Mask Agnostic: when set, masked-off elements may be written with all 1s or left undisturbed.", "values": [{"val":0,"label":"Undisturbed"},{"val":1,"label":"Agnostic (may write 1s)"}], "reserved": False, "rwtype": "RO"},
+        {"name": "vta",    "msb":  6, "lsb":  6, "description": "Vector Tail Agnostic: when set, tail elements (beyond vl) may be written with all 1s or left undisturbed.", "values": [{"val":0,"label":"Undisturbed"},{"val":1,"label":"Agnostic (may write 1s)"}], "reserved": False, "rwtype": "RO"},
+        {"name": "vsew",   "msb":  5, "lsb":  3, "description": "Selected Element Width: encodes the element data type width.", "values": VSEW, "reserved": False, "rwtype": "RO"},
+        {"name": "vlmul",  "msb":  2, "lsb":  0, "description": "Vector Length Multiplier: controls register grouping (LMUL). Signed 3-bit value; negative values represent fractional LMUL.", "values": VLMUL, "reserved": False, "rwtype": "RO"},
+    ],
+})
+
+registers.append({
+    "name": "vlenb",
+    "long_name": "Vector Register Length in Bytes",
+    "description": "Read-only constant holding VLEN/8 — the number of bytes in a single vector register. Useful for computing stride values without disturbing vl/vtype.",
+    "address": "0xC22", "privilege": "U", "access": "RO",
+    "spec_url": f"{SPEC_BASE_U}/v-st-ext.adoc",
+    "fields": [
+        {"name": "vlenb", "msb": 63, "lsb": 0, "description": "Bytes per vector register = VLEN/8. Design-time constant.", "values": [], "reserved": False, "rwtype": "RO"},
+    ],
+})
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SUPERVISOR-LEVEL CSRs
